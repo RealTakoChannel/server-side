@@ -1,0 +1,122 @@
+require('dotenv').config();
+const express = require('express');
+const mysql = require('mysql2/promise');
+const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+// Database connection
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
+// Authentication middleware
+const authenticate = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).send('Unauthorized');
+
+    const token = authHeader.split(' ')[1];
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.status(403).send('Invalid token');
+    }
+};
+
+// post route
+app.post('/api/posts', authenticate, async (req, res) => {
+    try {
+        const [result] = await pool.execute(
+            'INSERT INTO posts (content, user_id) VALUES (?, ?)',
+            [req.body.content, req.user.id]
+        );
+        res.status(201).json({ id: result.insertId });
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+app.get('/api/posts', async (req, res) => {
+    try {
+        const [posts] = await pool.query(`
+      SELECT p.*, u.username 
+      FROM posts p
+      JOIN users u ON p.user_id = u.id
+      ORDER BY p.created_at DESC
+    `);
+        res.json(posts);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+// comment route
+app.post('/api/comments', authenticate, async (req, res) => {
+    try {
+        const { content, postId } = req.body;
+        const [result] = await pool.execute(
+            'INSERT INTO comments (content, post_id, user_id) VALUES (?, ?, ?)',
+            [content, postId, req.user.id]
+        );
+        res.status(201).json({ id: result.insertId });
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+app.get('/api/comments', async (req, res) => {
+    try {
+        const { postId } = req.query;
+        const [comments] = await pool.query(`
+      SELECT c.*, u.username 
+      FROM comments c
+      JOIN users u ON c.user_id = u.id
+      WHERE c.post_id = ?
+      ORDER BY c.created_at DESC
+    `, [postId]);
+        res.json(comments);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+// like route
+app.post('/api/comments/:id/like', authenticate, async (req, res) => {
+    try {
+        await pool.execute(
+            'INSERT IGNORE INTO comment_likes (user_id, comment_id) VALUES (?, ?)',
+            [req.user.id, req.params.id]
+        );
+        res.status(200).send('Liked');
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+app.post('/api/comments/:id/favorite', authenticate, async (req, res) => {
+    try {
+        await pool.execute(
+            'INSERT IGNORE INTO comment_favorites (user_id, comment_id) VALUES (?, ?)',
+            [req.user.id, req.params.id]
+        );
+        res.status(200).send('Favorited');
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+app.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`);
+});
