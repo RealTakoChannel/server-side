@@ -2,13 +2,10 @@ const mysql = require('mysql2/promise');
 const bodyParser = require('body-parser');
 const http = require('http');
 
-var db = mysql.createConnection({
-
-})
 const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',
-    password: '352981790',
+    password: '123456',
     database: 'guitar_learn_db',
     waitForConnections: true,
     connectionLimit: 10,
