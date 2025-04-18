@@ -7,6 +7,7 @@ const pool = database.getConnection();
 
 const jwtKey = 'baca5d882bbced5e43ce691edde266291ea71d2dd7d710e70c1e9f6ad6837308';
 
+// middleware to authenticate user
 const authenticate = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).send('Unauthorized');
@@ -30,6 +31,7 @@ router.post('/register', async (req, res) => {
             'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
             [username, email, password]
         );
+        console.log("User Registered",result)
         res.status(201).json({ id: result.insertId });
     } catch (err) {
         res.status(500).send('Server error');
@@ -38,23 +40,30 @@ router.post('/register', async (req, res) => {
 
 //login route
 router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     try {
         const [rows] = await pool.execute(
-            'SELECT * FROM users WHERE username = ? AND password = ?',
-            [username, password]
+            'SELECT * FROM users WHERE email = ? AND password = ?',
+            [email, password]
         );
         if (rows.length === 0) {
+            console.log("Invalid email or password",rows)
             return res.status(401).send('Invalid email or password');
         }
         const user = rows[0];
-        jwt.sign({username, password},
+        jwt.sign({email, id: user.id, username: user.username },
             jwtKey,
-            {expiresIn: '30s'},
-            (err, token) => res.status(200).json({ message:"success login", token })
-            );
+            {expiresIn: '1d'},
+            (err, token) => res.status(200).json({
+                message:"success login",
+                email,
+                token
+            })
+        );
+        console.log("Login Success",rows)
     } catch (err) {
         res.status(500).send('Server error');
+        console.log("Login Failed",err)
     }
 });
 

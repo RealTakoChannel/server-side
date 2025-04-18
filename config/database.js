@@ -1,6 +1,4 @@
 const mysql = require('mysql2/promise');
-const bodyParser = require('body-parser');
-const http = require('http');
 
 const pool = mysql.createPool({
     host: 'localhost',
