@@ -1,18 +1,79 @@
 const express = require('express');
 const router = express.Router();
 const database = require('../config/database');
-const authenticate = require('../middleware/authenticate');
+const jwt = require('jsonwebtoken');
 
 const pool = database.getConnection();
 
+const jwtKey = 'baca5d882bbced5e43ce691edde266291ea71d2dd7d710e70c1e9f6ad6837308';
+
+const authenticate = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).send('Unauthorized');
+
+    const token = authHeader.split(' ')[1];
+    try {
+        const decoded = jwt.verify(token, jwtKey);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.status(403).send('Invalid token');
+    }
+};
+
+
+//register route
+router.post('/register', async (req, res) => {
+    const { username, email, password } = req.body;
+    try {
+        const [result] = await pool.execute(
+            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+            [username, email, password]
+        );
+        res.status(201).json({ id: result.insertId });
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+//login route
+router.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const [rows] = await pool.execute(
+            'SELECT * FROM users WHERE username = ? AND password = ?',
+            [username, password]
+        );
+        if (rows.length === 0) {
+            return res.status(401).send('Invalid email or password');
+        }
+        const user = rows[0];
+        jwt.sign({username, password},
+            jwtKey,
+            {expiresIn: '30s'},
+            (err, token) => res.status(200).json({ message:"success login", token })
+            );
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+router.get('/afterLogin',async (req, res) => {
+    const header = req.headers;
+    const token = header.authorization.split(' ')[1];
+    console.log(token)
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if(err){
+            res.status(401).send('Unauthorized');
+        }
+        else{
+            res.status(200).json({message:"Success!", payload});
+        }
+    })
+})
+
 
 // post route
-router.get('/hello',async(req,res)=>{
-    res.status(200).send('hello world');
-} )
-
-
-
 router.post('/posts', authenticate, async (req, res) => {
     try {
         const [result] = await pool.execute(
