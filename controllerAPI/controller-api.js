@@ -7,13 +7,13 @@ const pool = database.getConnection();
 
 
 // post route
-router.get('api/hello',async(req,res)=>{
+router.get('/hello',async(req,res)=>{
     res.status(200).send('hello world');
 } )
 
 
 
-router.post('/api/posts', authenticate, async (req, res) => {
+router.post('/posts', authenticate, async (req, res) => {
     try {
         const [result] = await pool.execute(
             'INSERT INTO posts (content, user_id) VALUES (?, ?)',
@@ -25,7 +25,7 @@ router.post('/api/posts', authenticate, async (req, res) => {
     }
 });
 
-router.get('/api/posts', async (req, res) => {
+router.get('/posts', async (req, res) => {
     try {
         const [posts] = await pool.query(`
       SELECT p.*, u.username 
@@ -40,7 +40,7 @@ router.get('/api/posts', async (req, res) => {
 });
 
 // comment route
-router.post('/api/comments', authenticate, async (req, res) => {
+router.post('/comments', authenticate, async (req, res) => {
     try {
         const { content, postId } = req.body;
         const [result] = await pool.execute(
@@ -53,7 +53,7 @@ router.post('/api/comments', authenticate, async (req, res) => {
     }
 });
 
-router.get('/api/comments', async (req, res) => {
+router.get('/comments', async (req, res) => {
     try {
         const { postId } = req.query;
         const [comments] = await pool.query(`
@@ -70,7 +70,7 @@ router.get('/api/comments', async (req, res) => {
 });
 
 // like route
-router.post('/api/comments/:id/like', authenticate, async (req, res) => {
+router.post('/comments/:id/like', authenticate, async (req, res) => {
     try {
         await pool.execute(
             'INSERT IGNORE INTO comment_likes (user_id, comment_id) VALUES (?, ?)',
@@ -82,7 +82,7 @@ router.post('/api/comments/:id/like', authenticate, async (req, res) => {
     }
 });
 
-router.post('/api/comments/:id/favorite', authenticate, async (req, res) => {
+router.post('/comments/:id/favorite', authenticate, async (req, res) => {
     try {
         await pool.execute(
             'INSERT IGNORE INTO comment_favorites (user_id, comment_id) VALUES (?, ?)',
