@@ -26,8 +26,32 @@ const authenticate = async (req, res, next) => {
 //register route
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
+
+    const [users] = await pool.query(
+        'SELECT id FROM users WHERE username = ?',
+        [username]
+    );
+
+    if (users.length > 0) {
+        return res.status(400).json({
+            error: 'Username Exists'
+        });
+    }
+
+    const [emails] = await pool.query(
+        'SELECT id FROM users WHERE email = ?',
+        [email]
+    );
+
+    if (emails.length > 0) {
+        return res.status(400).json({
+            error: 'Email Exists'
+        });
+    }
+
     console.log(req.body);
     try {
+        console.log(username, email, password)
         const [result] = await pool.execute(
             'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
             [username, email, password]
@@ -35,7 +59,9 @@ router.post('/register', async (req, res) => {
         console.log("User Registered",result)
         res.status(201).json({ id: result.insertId });
     } catch (err) {
+        console.log(err);
         res.status(500).send('Server error');
+
     }
 });
 
