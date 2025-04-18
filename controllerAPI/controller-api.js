@@ -26,6 +26,7 @@ const authenticate = async (req, res, next) => {
 //register route
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
+    console.log(req.body);
     try {
         const [result] = await pool.execute(
             'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
@@ -41,6 +42,7 @@ router.post('/register', async (req, res) => {
 //login route
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
+    console.log(req.body)
     try {
         const [rows] = await pool.execute(
             'SELECT * FROM users WHERE email = ? AND password = ?',
@@ -108,6 +110,17 @@ router.get('/posts', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+router.post('/posts/:id/like', authenticate, async (req, res) => {
+    try {
+        await pool.execute(
+            'INSERT IGNORE INTO post_likes (user_id, post_id) VALUES (?, ?)',
+            [req.user.id, req.params.id]
+        );
+        res.status(200).send('Liked');
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
 
 // comment route
 router.post('/comments', authenticate, async (req, res) => {
