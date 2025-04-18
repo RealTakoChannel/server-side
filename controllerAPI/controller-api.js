@@ -171,11 +171,29 @@ router.post('/comments/:id/favorite', authenticate, async (req, res) => {
             'INSERT IGNORE INTO comment_favorites (user_id, comment_id) VALUES (?, ?)',
             [req.user.id, req.params.id]
         );
-        res.status(200).send('Favorited');
+        res.status(200).send('Favorite');
     } catch (err) {
         res.status(500).send('Server error');
     }
 });
+
+// score route
+
+router.get('/scores',async (req,res)=>{
+    try{
+        const [scores] = await pool.query(`
+      SELECT s.*, u.username 
+      FROM scores s
+      JOIN users u ON s.user_id = u.id
+      ORDER BY s.created_at DESC
+    `);
+        res.json(scores);
+    }
+    catch (err) {
+        res.status(500).send('Server Error');
+    }
+    }
+)
 
 
 
