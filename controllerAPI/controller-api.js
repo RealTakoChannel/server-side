@@ -223,8 +223,9 @@ router.post('/comments', authenticate, async (req, res) => {
     }
 });
 
-router.get('comments/:id', async (req, res) => {
+router.get('/comments/:id', async (req, res) => {
     try {
+        console.log(req.params.id)
         const [comments] = await pool.query(
             'SELECT * FROM comments WHERE post_id = ?',
             [req.params.id]
