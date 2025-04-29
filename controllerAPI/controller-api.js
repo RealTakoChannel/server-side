@@ -223,21 +223,17 @@ router.post('/comments', authenticate, async (req, res) => {
     }
 });
 
-router.get('/comments', async (req, res) => {
+router.get('comments/:id', async (req, res) => {
     try {
-        const { postId } = req.query;
-        const [comments] = await pool.query(`
-      SELECT c.*, u.username 
-      FROM comments c
-      JOIN users u ON c.user_id = u.id
-      WHERE c.post_id = ?
-      ORDER BY c.created_at DESC
-    `, [postId]);
+        const [comments] = await pool.query(
+            'SELECT * FROM comments WHERE post_id = ?',
+            [req.params.id]
+        );
         res.json(comments);
     } catch (err) {
         res.status(500).send('Server error');
     }
-});
+})
 
 // like route
 router.post('/comments/:id/like', authenticate, async (req, res) => {
