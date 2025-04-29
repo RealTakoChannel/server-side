@@ -139,7 +139,7 @@ router.get('/posts', async (req, res) => {
 router.post('/posts/:id/like', authenticate, async (req, res) => {
     try {
         await pool.execute(
-            'INSERT IGNORE INTO post_likes (user_id, post_id) VALUES (?, ?)',
+            'INSERT IGNORE INTO post_like (user_id, post_id) VALUES (?, ?)',
             [req.user.id, req.params.id]
         );
         res.status(200).send('Liked');
@@ -147,6 +147,67 @@ router.post('/posts/:id/like', authenticate, async (req, res) => {
         res.status(500).send('Server error');
     }
 })
+
+router.post('/posts/:id/favourite', authenticate, async (req, res) => {
+    try {
+        await pool.execute(
+            'INSERT IGNORE INTO post_favourites (user_id, post_id) VALUES (?, ?)',
+            [req.user.id, req.params.id]
+        );
+        res.status(200).send('Favourite');
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+router.get('/getPostLikes/:id', async (req, res) => {
+    try {
+        const [likes] = await pool.query(
+            'SELECT COUNT(*) FROM post_like WHERE post_id = ?',
+            [req.params.id]
+        );
+        res.json(likes);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+router.get('/getPostUserLiked/:id',authenticate , async (req, res) => {
+    try {
+        const [posts] = await pool.query(
+            'SELECT * FROM post_like WHERE user_id = ?',
+            [req.params.id]
+        );
+        res.json(posts);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+router.get('/getPostUserFavourite/:id',authenticate , async (req, res) => {
+    try {
+        const [posts] = await pool.query(
+            'SELECT * FROM post_favourites WHERE user_id = ?',
+            [req.params.id]
+        );
+        res.json(posts);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+router.get('/getPostUserPosted/:id',authenticate , async (req, res) => {
+    try {
+        const [posts] = await pool.query(
+            'SELECT * FROM posts WHERE user_id = ?',
+            [req.params.id]
+        );
+        res.json(posts);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+
 
 // comment route
 router.post('/comments', authenticate, async (req, res) => {
@@ -220,7 +281,6 @@ router.get('/scores',async (req,res)=>{
     }
     }
 )
-
 
 
 
