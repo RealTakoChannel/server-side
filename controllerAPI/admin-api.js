@@ -73,7 +73,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// 实现分页查询users 返回页码总用户数量，页码数量，所在页数
+// 实现分页查询users 返回用户信息,总用户数，页码数
 // 默认提供第一页
 router.get('/users/',authenticate, async (req, res) => {
     try {
@@ -168,7 +168,8 @@ router.get('/user/:id',authenticate, async (req, res) => {
     }
 });
 
-// 分页通过关键字来查找用户
+// 分页通过关键字来查找用户 返回用户信息,总用户数，页码数
+// 默认第一页
 router.post('/user/search',authenticate, async (req, res) => {
     try {
         const { keyword } = req.body;
@@ -176,6 +177,29 @@ router.post('/user/search',authenticate, async (req, res) => {
         const [users] = await pool.query(
             'SELECT * FROM users WHERE username LIKE ? OR email LIKE ? LIMIT ?',
             [`%${keyword}%`, `%${keyword}%`, pageSize]
+        );
+        const [totalUsers] = await pool.query(
+            'SELECT COUNT(*) AS total FROM users WHERE username LIKE ? OR email LIKE ?',
+            [`%${keyword}%`, `%${keyword}%`]
+        );
+        const total = totalUsers[0].total;
+        const totalPages = Math.ceil(total / pageSize);
+        res.json({ users, total, totalPages });
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+// 其他页
+router.post('/user/search/:page',authenticate, async (req, res) => {
+    try {
+        const { keyword } = req.body;
+        const page = parseInt(req.params.page);
+        const pageSize = 10;
+        const offset = (page - 1) * pageSize;
+        const [users] = await pool.query(
+            'SELECT * FROM users WHERE username LIKE ? OR email LIKE ? LIMIT ? OFFSET ?',
+            [`%${keyword}%`, `%${keyword}%`, pageSize, offset]
         );
         const [totalUsers] = await pool.query(
             'SELECT COUNT(*) AS total FROM users WHERE username LIKE ? OR email LIKE ?',
