@@ -5,23 +5,8 @@ const jwt = require('jsonwebtoken');
 
 const pool = database.getConnection();
 
-const jwtKey = 'baca5d882bbced5e43ce691edde266291ea71d2dd7d710e70c1e9f6ad6837308';
-
-// middleware to authenticate user
-const authenticate = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).send('Unauthorized');
-
-    const token = authHeader.split(' ')[1];
-    try {
-        const decoded = jwt.verify(token, jwtKey);
-        req.user = decoded;
-        next();
-    } catch (err) {
-        res.status(403).send('Invalid token');
-    }
-};
-
+const authenticate = require('../middleware/auth');
+const jwtKey = authenticate.jwtKey
 
 //register route
 router.post('/register', async (req, res) => {
@@ -48,7 +33,6 @@ router.post('/register', async (req, res) => {
             error: 'Email Exists'
         });
     }
-
     console.log(req.body);
     try {
         console.log(username, email, password)
@@ -109,7 +93,6 @@ router.get('/afterLogin',async (req, res) => {
     })
 })
 
-
 // post route
 router.post('/posts', authenticate, async (req, res) => {
     try {
@@ -136,6 +119,7 @@ router.get('/posts', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
 router.post('/posts/:id/like', authenticate, async (req, res) => {
     try {
         await pool.execute(
@@ -227,7 +211,7 @@ router.get('/comments/:id', async (req, res) => {
     try {
         console.log(req.params.id)
         const [comments] = await pool.query(
-            'SELECT * FROM comments WHERE post_id = ?',
+            'SELECT comments.content, users.username, comments.created_at, comments.id, comments.post_id FROM comments JOIN users ON comments.user_id = users.id WHERE post_id = ?',
             [req.params.id]
         );
         res.json(comments);
@@ -244,6 +228,18 @@ router.post('/comments/:id/like', authenticate, async (req, res) => {
             [req.user.id, req.params.id]
         );
         res.status(200).send('Liked');
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+});
+
+router.get('/getCommentLikes/:id', async (req, res) => {
+    try {
+        const [likes] = await pool.query(
+            'SELECT COUNT(*) FROM comment_likes WHERE comment_id = ?',
+            [req.params.id]
+        );
+        res.json(likes);
     } catch (err) {
         res.status(500).send('Server error');
     }
