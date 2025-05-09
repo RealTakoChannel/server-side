@@ -134,3 +134,4 @@ dist
 
 # request-debugger
 request.http
+.DS_Store
