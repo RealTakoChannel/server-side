@@ -7,7 +7,7 @@ const pool = database.getConnection();
 const authenticate = require('../middleware/auth');
 const jwtKey = authenticate.jwtKey
 
-// 注册管理员账号
+// 登录后注册管理员账号
 router.post('/register',authenticate, async (req, res) => {
     try {
         const { username, email, password } = req.body;
