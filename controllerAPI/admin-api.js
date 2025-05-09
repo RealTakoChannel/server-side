@@ -168,15 +168,22 @@ router.get('/user/:id',authenticate, async (req, res) => {
     }
 });
 
-// 查找用户
+// 分页通过关键字来查找用户
 router.post('/user/search',authenticate, async (req, res) => {
     try {
         const { keyword } = req.body;
+        const pageSize = 10;
         const [users] = await pool.query(
-            'SELECT * FROM users WHERE username LIKE ? OR email LIKE ?',
+            'SELECT * FROM users WHERE username LIKE ? OR email LIKE ? LIMIT ?',
+            [`%${keyword}%`, `%${keyword}%`, pageSize]
+        );
+        const [totalUsers] = await pool.query(
+            'SELECT COUNT(*) AS total FROM users WHERE username LIKE ? OR email LIKE ?',
             [`%${keyword}%`, `%${keyword}%`]
         );
-        res.json(users);
+        const total = totalUsers[0].total;
+        const totalPages = Math.ceil(total / pageSize);
+        res.json({ users, total, totalPages });
     } catch (err) {
         res.status(500).send('Server error');
     }
