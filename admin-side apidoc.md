@@ -221,11 +221,45 @@ Authorization: Bearer <JWT_TOKEN>
   "posts": [
     {
       "id": 12,
-      "content": "你好",
+      "content": "hello",
       "user_id": 33,
       "created_at": "2025-05-05T16:47:43.000Z"
     }
   ]
+}
+```
+#### 删除帖子
+**端点**: DELETE /posts/:id
+**成功响应**:
+```json
+{
+  "result": "受影响的行数（1表示成功）"
+}
+```
+-----
+### 5. 评论管理
+#### 5.1 获取指定帖子的评论
+**请求方式**：GET路径： `/comments/:post_id`
+   **响应**:
+```json
+[
+   {
+       "id": "评论ID",
+       "post_id": "所属帖子ID",
+       "user_id": "评论用户ID",
+       "content": "评论内容",
+       "created_at": "评论时间",
+       "username": "评论者用户名"
+   }
+]
+```
+
+#### 5.2删除评论
+**请求方式**：DELETE路径：/comments/:comment_id
+**成功响应**:
+```json
+{
+ "result": "受影响的行数（1表示成功）"
 }
 ```
 -----
