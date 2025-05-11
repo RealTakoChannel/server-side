@@ -23,4 +23,4 @@ const authenticate = async (req, res, next) => {
 };
 
 module.exports = authenticate;
-module.exports.jwtKey = jwtKey
+module.exports.jwtKey = jwtKey;
