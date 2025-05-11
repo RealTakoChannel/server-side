@@ -225,7 +225,7 @@ router.get('/posts',authenticate, async (req, res) => {
     try {
         const pageSize = 10;
         const [posts] = await pool.query(
-            'SELECT * FROM posts ORDER BY id DESC LIMIT ?'
+            'SELECT * FROM posts ORDER BY id DESC LIMIT ?',
             [pageSize]
         );
         const [totalPosts] = await pool.query(
@@ -235,7 +235,7 @@ router.get('/posts',authenticate, async (req, res) => {
         const totalPages = Math.ceil(total / pageSize);
         res.json({posts, total, totalPages});
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
     }
 })
 

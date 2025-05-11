@@ -1,12 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const database = require('../config/database');
-const jwt = require('jsonwebtoken');
-
 const pool = database.getConnection();
-
 const authenticate = require('../middleware/auth');
-const jwtKey = authenticate.jwtKey
 
 router.get('/info',authenticate, async (req, res) => {
     try {
@@ -24,20 +20,18 @@ router.get('/info',authenticate, async (req, res) => {
     }
 })
 
-router.put('/info',authenticate, async (req, res) => {
+router.put('/changePassword',authenticate, async (req, res) => {
     try {
-        const { username, email, password, id } = req.body;
+        const {password, id } = req.body;
         const [result] = await pool.query(
-            'UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?',
-            [username, email, password, id]
+            'UPDATE users SET password = ? WHERE id = ?',
+            [password, id]
         );
         res.status(200).json({ result: result.affectedRows });
     } catch (err) {
         res.status(500).send('Server error');
     }
 });
-
-
 
 
 
