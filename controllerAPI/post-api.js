@@ -67,6 +67,21 @@ router.post('/:id/like', authenticate, async (req, res) => {
 })
 
 /**
+ * Is the post liked by the user
+ */
+router.get('/:id/liked',authenticate , async (req, res) => {
+    try {
+        const [liked] = await pool.query(
+            'SELECT COUNT(*) FROM post_like WHERE post_id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+        res.json(liked);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+/**
  * Favourite a post
  */
 router.post('/:id/favourite', authenticate, async (req, res) => {
@@ -76,6 +91,21 @@ router.post('/:id/favourite', authenticate, async (req, res) => {
             [req.user.id, req.params.id]
         );
         res.status(200).send('Favourite');
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+/**
+ * Is the post favourite by the user
+ */
+router.get('/:id/favourite',authenticate , async (req, res) => {
+    try {
+        const [favourite] = await pool.query(
+            'SELECT COUNT(*) FROM post_favourites WHERE post_id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+        res.json(favourite);
     } catch (err) {
         res.status(500).send('Server error');
     }

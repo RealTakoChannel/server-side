@@ -56,6 +56,21 @@ router.get('/posts/favourite',authenticate , async (req, res) => {
 })
 
 /**
+ * Delete user's favourite post
+ */
+router.delete('/posts/favourite/:id',authenticate , async (req, res) => {
+    try {
+        const [result] = await pool.query(
+            'DELETE FROM posts_favourites WHERE user_id = ? AND post_id = ?',
+            [req.user.id, req.params.id]
+        );
+        res.status(200).json({ result: result.affectedRows });
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+/**
  * Get user's posts
  */
 router.get('/posts',authenticate , async (req, res) => {

@@ -82,4 +82,36 @@ router.get('/:id/like', async (req, res) => {
     }
 });
 
+/**
+ * Is the comment liked by the user
+ */
+
+router.get('/:id/liked',authenticate , async (req, res) => {
+    try {
+        const [liked] = await pool.query(
+            'SELECT COUNT(*) FROM comment_likes WHERE comment_id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+        res.json(liked);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+/**
+ * Is the comment favourite by the user
+ */
+
+router.get('/:id/favorite',authenticate , async (req, res) => {
+    try {
+        const [favorite] = await pool.query(
+            'SELECT COUNT(*) FROM comment_favorites WHERE comment_id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+        res.json(favorite);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
 module.exports = router;
