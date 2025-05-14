@@ -4,6 +4,10 @@ const database = require('../config/database');
 const pool = database.getConnection();
 const authenticate = require('../middleware/auth');
 
+
+/**
+ * Get user's information
+ */
 router.get('/info',authenticate, async (req, res) => {
     try {
         const [rows] = await pool.execute(
@@ -20,6 +24,9 @@ router.get('/info',authenticate, async (req, res) => {
     }
 })
 
+/**
+ * Change user's password
+ */
 router.put('/changePassword',authenticate, async (req, res) => {
     try {
         const {password, id } = req.body;
@@ -32,6 +39,36 @@ router.put('/changePassword',authenticate, async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
+/**
+ * Get user's favourite posts
+ */
+router.get('/:id/posts/favourite',authenticate , async (req, res) => {
+    try {
+        const [posts] = await pool.query(
+            'SELECT * FROM post_favourites WHERE user_id = ?',
+            [req.params.id]
+        );
+        res.json(posts);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+/**
+ * Get user's posts
+ */
+router.get('/:id/posts',authenticate , async (req, res) => {
+    try {
+        const [posts] = await pool.query(
+            'SELECT * FROM posts WHERE user_id = ?',
+            [req.params.id]
+        );
+        res.json(posts);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
 
 
 
