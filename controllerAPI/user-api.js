@@ -43,11 +43,11 @@ router.put('/changePassword',authenticate, async (req, res) => {
 /**
  * Get user's favourite posts
  */
-router.get('/:id/posts/favourite',authenticate , async (req, res) => {
+router.get('/posts/favourite',authenticate , async (req, res) => {
     try {
         const [posts] = await pool.query(
             'SELECT * FROM post_favourites WHERE user_id = ?',
-            [req.params.id]
+            [req.user.id]
         );
         res.json(posts);
     } catch (err) {
@@ -58,11 +58,11 @@ router.get('/:id/posts/favourite',authenticate , async (req, res) => {
 /**
  * Get user's posts
  */
-router.get('/:id/posts',authenticate , async (req, res) => {
+router.get('/posts',authenticate , async (req, res) => {
     try {
         const [posts] = await pool.query(
             'SELECT * FROM posts WHERE user_id = ?',
-            [req.params.id]
+            [req.user.id]
         );
         res.json(posts);
     } catch (err) {

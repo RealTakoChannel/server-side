@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const authenticate = require('../middleware/auth');
+const database = require("../config/database");
+const pool = database.getConnection();
 
 router.get('/scores',authenticate, async (req, res) => {
     try {
