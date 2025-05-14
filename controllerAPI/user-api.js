@@ -46,7 +46,7 @@ router.put('/changePassword',authenticate, async (req, res) => {
 router.get('/posts/favourite',authenticate , async (req, res) => {
     try {
         const [posts] = await pool.query(
-            'SELECT * FROM post_favourites WHERE user_id = ?',
+            'SELECT * FROM posts_favourites JOIN posts ON posts_favourites.post_id = posts.id WHERE posts_favourites.user_id = ?',
             [req.user.id]
         );
         res.json(posts);
