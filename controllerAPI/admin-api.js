@@ -269,7 +269,7 @@ router.delete('/posts/:id',authenticate, async (req, res) => {
         );
         res.status(200).json({ result: result.affectedRows });
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
     }
 })
 /************************************************************************************************
@@ -285,7 +285,7 @@ router.get('/comments/:id', async (req, res) => {
         );
         res.json(comments);
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
     }
     })
 
@@ -298,7 +298,7 @@ router.delete('/comments/:id',authenticate, async (req, res) => {
         );
         res.status(200).json({ result: result.affectedRows });
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
     }
 })
 module.exports = router;

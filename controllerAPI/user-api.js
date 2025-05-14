@@ -29,14 +29,17 @@ router.get('/info',authenticate, async (req, res) => {
  */
 router.put('/changePassword',authenticate, async (req, res) => {
     try {
-        const {password, id } = req.body;
+        const {password} = req.body;
+        const id = req.user.id
+        console.log("user "+id+" try to edit password to "+ password)
         const [result] = await pool.query(
             'UPDATE users SET password = ? WHERE id = ?',
             [password, id]
         );
+        console.log("success")
         res.status(200).json({ result: result.affectedRows });
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
     }
 });
 
@@ -45,13 +48,14 @@ router.put('/changePassword',authenticate, async (req, res) => {
  */
 router.get('/posts/favourite',authenticate , async (req, res) => {
     try {
+        console.log(req.user.id)
         const [posts] = await pool.query(
-            'SELECT * FROM posts_favourites JOIN posts ON posts_favourites.post_id = posts.id WHERE posts_favourites.user_id = ?',
+            'SELECT * FROM post_favourites JOIN posts ON post_favourites.post_id = posts.id WHERE post_favourites.user_id = ?',
             [req.user.id]
         );
         res.json(posts);
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
     }
 })
 
@@ -66,7 +70,7 @@ router.delete('/posts/favourite/:id',authenticate , async (req, res) => {
         );
         res.status(200).json({ result: result.affectedRows });
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
     }
 })
 
@@ -81,7 +85,7 @@ router.get('/posts',authenticate , async (req, res) => {
         );
         res.json(posts);
     } catch (err) {
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
     }
 })
 

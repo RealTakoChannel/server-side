@@ -88,6 +88,7 @@ router.get('/:id/like', async (req, res) => {
 
 router.get('/:id/liked',authenticate , async (req, res) => {
     try {
+        console.log("user id:",req.user.id)
         const [liked] = await pool.query(
             'SELECT COUNT(*) FROM comment_likes WHERE comment_id = ? AND user_id = ?',
             [req.params.id, req.user.id]
