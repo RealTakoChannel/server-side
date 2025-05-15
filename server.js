@@ -9,6 +9,7 @@ const userAPI = require('./controllerAPI/user-api')
 const postAPI = require('./controllerAPI/post-api')
 const commentAPI = require('./controllerAPI/comment-api')
 const songAPI = require('./controllerAPI/song-api')
+const aiAPI = require('./controllerAPI/ai-api')
 
 const app = express();
 app.use(cors({origin: '*'}));
@@ -21,6 +22,7 @@ app.use('/api/user', userAPI);
 app.use('/api/posts', postAPI);
 app.use('/api/comments', commentAPI);
 app.use('/api/songs', songAPI);
+app.use('/api/chat', aiAPI);
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*')

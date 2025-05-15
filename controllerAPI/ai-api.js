@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authenticate = require('../middleware/auth');
 
-router.post('/api/chat',authenticate, async (req, res) => {
+router.post('/',authenticate, async (req, res) => {
     try {
         // Verify the request parameters
         if (!req.body?.messages) {
@@ -51,3 +51,5 @@ router.post('/api/chat',authenticate, async (req, res) => {
         });
     }
 });
+
+module.exports = router;
