@@ -407,6 +407,26 @@ router.get('/songs/:id',authenticate, async (req, res) => {
     }
 })
 
+//使用任意关键字搜索歌曲
+router.post('/songs/search',authenticate, async (req, res) => {
+    try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
+        const { keyword } = req.body;
+        const [songs] = await pool.query(
+            'SELECT id, title, artist FROM songs WHERE title LIKE ? OR artist LIKE ? ORDER BY created_at DESC',
+            [`%${keyword}%`, `%${keyword}%`]
+        );
+        res.json(songs);
+    }
+    catch (err) {
+        res.status(500).send('Server Error');
+    }
+}
+)
+
 router.get('/lyrics/:id',authenticate, async (req, res) => {
     try {
         if(!req.user.isAdmin){
