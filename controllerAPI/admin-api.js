@@ -13,6 +13,11 @@ const jwtKey = authenticate.jwtKey
 // 登录后注册管理员账号
 router.post('/register',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+        })
+        }
         const { username, email, password } = req.body;
         // 检查用户名是否已存在
         const [users] = await pool.query(
@@ -60,7 +65,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).send('Invalid email or password');
         }
         const user = rows[0];
-        jwt.sign({email, id: user.id, username: user.username },
+        jwt.sign({email, id: user.id, username: user.username, isAdmin: user.isAdmin },
             jwtKey,
             {expiresIn: '1d'},
             (err, token) => res.status(200).json({
@@ -75,6 +80,15 @@ router.post('/login', async (req, res) => {
         console.log("Login Failed",err)
     }
 });
+
+router.get('/afterLogin',authenticate, async (req, res) => {
+    try {
+        const user = req.user;
+        res.json(user);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
 /************************************************************************************************
  * 管理员操作用户系统
  */
@@ -82,6 +96,11 @@ router.post('/login', async (req, res) => {
 // 默认提供第一页
 router.get('/users/',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })
+        }
         const pageSize = 10;
         const [users] = await pool.query(
             'SELECT * FROM users LIMIT ? ',
@@ -101,6 +120,11 @@ router.get('/users/',authenticate, async (req, res) => {
 // 指定页码查询
 router.get('/users/:page',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })
+        }
         const page = parseInt(req.params.page);
         const pageSize = 10;
         const offset = (page - 1) * pageSize;
@@ -122,6 +146,10 @@ router.get('/users/:page',authenticate, async (req, res) => {
 // 添加用户
 router.post('/user',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+        return res.status(400).json({
+            error: 'Permission Denied'
+        })}
         const { username, email, password } = req.body;
         const [result] = await pool.query(
             'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
@@ -136,6 +164,11 @@ router.post('/user',authenticate, async (req, res) => {
 // 修改用户信息
 router.put('/user/:id',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+        return res.status(400).json({
+            error: 'Permission Denied'
+        })
+        }
         const { username, email, password } = req.body;
         const [result] = await pool.query(
             'UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?',
@@ -150,6 +183,10 @@ router.put('/user/:id',authenticate, async (req, res) => {
 // 删除用户
 router.delete('/user/:id',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+        return res.status(400).json({
+            error: 'Permission Denied'
+        })}
         const [result] = await pool.query(
             'DELETE FROM users WHERE id = ?',
             [req.params.id]
@@ -163,6 +200,10 @@ router.delete('/user/:id',authenticate, async (req, res) => {
 // 使用id获取单个用户信息
 router.get('/user/:id',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
         const [user] = await pool.query(
             'SELECT * FROM users WHERE id = ?',
             [req.params.id]
@@ -177,6 +218,11 @@ router.get('/user/:id',authenticate, async (req, res) => {
 // 默认第一页
 router.post('/user/search',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })
+        }
         const { keyword } = req.body;
         const pageSize = 10;
         const [users] = await pool.query(
@@ -198,6 +244,10 @@ router.post('/user/search',authenticate, async (req, res) => {
 // 其他页
 router.post('/user/search/:page',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
         const { keyword } = req.body;
         const page = parseInt(req.params.page);
         const pageSize = 10;
@@ -223,6 +273,10 @@ router.post('/user/search/:page',authenticate, async (req, res) => {
 // 分页显示帖子 id倒序
 router.get('/posts',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
         const pageSize = 10;
         const [posts] = await pool.query(
             'SELECT * FROM posts ORDER BY id DESC LIMIT ?',
@@ -242,6 +296,10 @@ router.get('/posts',authenticate, async (req, res) => {
 // 其他页的帖子
 router.get('/posts/:page',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
         const page = parseInt(req.params.page);
         const pageSize = 10;
         const offset = (page - 1) * pageSize;
@@ -263,6 +321,10 @@ router.get('/posts/:page',authenticate, async (req, res) => {
 // 删除帖子
 router.delete('/posts/:id',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
         const [result] = await pool.query(
             'DELETE FROM posts WHERE id = ?',
             [req.params.id]
@@ -279,6 +341,10 @@ router.delete('/posts/:id',authenticate, async (req, res) => {
 // 获取指定帖子下的评论
 router.get('/comments/:id', async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
         const [comments] = await pool.query(
             'SELECT comments.content, users.username, comments.created_at, comments.id, comments.post_id FROM comments JOIN users ON comments.user_id = users.id WHERE post_id = ?',
             [req.params.id]
@@ -292,9 +358,107 @@ router.get('/comments/:id', async (req, res) => {
 // 删除评论
 router.delete('/comments/:id',authenticate, async (req, res) => {
     try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
         const [result] = await pool.query(
             'DELETE FROM comments WHERE id = ?',
             [req.params.id]
+        );
+        res.status(200).json({ result: result.affectedRows });
+    } catch (err) {
+        res.status(500).send({message: 'Server error', err});
+    }
+})
+/************************************************************************************************
+ * 管理员操作乐曲系统
+ */
+router.get('/songs',authenticate, async (req, res) => {
+    try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
+        const [songs] = await pool.query(
+            'SELECT title, artist FROM songs ORDER BY created_at DESC'
+        );
+        res.json(songs);
+    }
+    catch (err) {
+        res.status(500).send('Server Error');
+    }
+})
+
+router.get('/songs/:id',authenticate, async (req, res) => {
+    try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
+        const [song] = await pool.query(
+            'SELECT * FROM songs WHERE id = ?',
+            [req.params.id]
+        );
+        res.json(song);
+    }
+    catch (err) {
+        res.status(500).send('Server Error');
+    }
+})
+
+router.post('/songs',authenticate, async (req, res) => {
+    try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
+        const { title, artist, lyrics } = req.body;
+        if (!Array.isArray(lyrics)) {
+            return res.status(400).json({ error: "Lyrics must be an array" });
+        }
+        const lyricsJson = JSON.stringify(lyrics);
+        const [result] = await pool.query(
+            'INSERT INTO songs (title, artist, lyrics) VALUES (?, ?, ?)',
+            [title, artist, lyricsJson]
+        );
+        res.status(201).json({
+            id: result.insertId,
+            message: "Song created successfully",
+            lyrics: lyrics
+        });
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server Error', details: err});
+    }
+});
+router.delete('/songs/:id',authenticate, async (req, res) => {
+    try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
+        const [result] = await pool.query(
+            'DELETE FROM songs WHERE id = ?',
+            [req.params.id]
+        );
+        res.status(200).json({ result: result.affectedRows });
+    } catch (err) {
+        res.status(500).send({message: 'Server error', err});
+    }
+})
+router.put('/songs/:id',authenticate, async (req, res) => {
+    try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
+        const { title, artist, lyrics } = req.body;
+        const lyricsJson = JSON.stringify(lyrics);
+        const [result] = await pool.query(
+            'UPDATE songs SET title = ?, artist = ?, lyrics = ? WHERE id = ?',
+            [title, artist, lyricsJson, req.params.id]
         );
         res.status(200).json({ result: result.affectedRows });
     } catch (err) {
