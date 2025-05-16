@@ -381,7 +381,7 @@ router.get('/songs',authenticate, async (req, res) => {
                 error: 'Permission Denied'
             })}
         const [songs] = await pool.query(
-            'SELECT title, artist FROM songs ORDER BY created_at DESC'
+            'SELECT id, title, artist FROM songs ORDER BY created_at DESC'
         );
         res.json(songs);
     }
@@ -391,6 +391,23 @@ router.get('/songs',authenticate, async (req, res) => {
 })
 
 router.get('/songs/:id',authenticate, async (req, res) => {
+    try {
+        if(!req.user.isAdmin){
+            return res.status(400).json({
+                error: 'Permission Denied'
+            })}
+        const [songs] = await pool.query(
+            'SELECT id, title, artist FROM songs WHERE id = ? ORDER BY created_at DESC',
+            [req.params.id]
+        );
+        res.json(songs);
+    }
+    catch (err) {
+        res.status(500).send('Server Error');
+    }
+})
+
+router.get('/lyrics/:id',authenticate, async (req, res) => {
     try {
         if(!req.user.isAdmin){
             return res.status(400).json({

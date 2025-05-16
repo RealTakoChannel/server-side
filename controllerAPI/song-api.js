@@ -7,7 +7,7 @@ const pool = database.getConnection();
 router.get('/',authenticate, async (req, res) => {
     try {
         const [songs] = await pool.query(
-            'SELECT title, artist FROM songs ORDER BY created_at DESC'
+            'SELECT id, title, artist FROM songs ORDER BY created_at DESC'
         );
         res.json(songs);
     }

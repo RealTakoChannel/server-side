@@ -46,7 +46,7 @@ router.post('/register', async (req, res) => {
         res.status(201).json({ id: result.insertId });
     } catch (err) {
         console.log(err);
-        res.status(500).send('Server error');
+        res.status(500).send({message: 'Server error', err});
 
     }
 });
