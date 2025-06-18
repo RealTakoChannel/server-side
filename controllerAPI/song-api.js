@@ -43,7 +43,6 @@ router.post('/',authenticate, async (req, res) => {
         res.status(201).json({
             id: result.insertId,
             message: "Song created successfully",
-            lyrics: lyrics
         });
     }
     catch (err) {

@@ -1,6 +1,6 @@
 # 后台管理系统API文档
 
-**Base URL**: `frp-aim.com:56647/api/admin`
+**Base URL**: `https://api.hf2e2bc54.nyat.app:56647/api/admin`
 
 ## 鉴权方式
 
@@ -263,6 +263,8 @@ Authorization: Bearer <JWT_TOKEN>
 }
 ```
 -----
+### 6. 乐谱管理
+#### 6.1 展示所有乐谱
 ## 错误码说明
 
 | 状态码 |        说明        |

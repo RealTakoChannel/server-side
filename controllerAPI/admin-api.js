@@ -339,7 +339,7 @@ router.delete('/posts/:id',authenticate, async (req, res) => {
  */
 
 // 获取指定帖子下的评论
-router.get('/comments/:id', async (req, res) => {
+router.get('/comments/:id',authenticate, async (req, res) => {
     try {
         if(!req.user.isAdmin){
             return res.status(400).json({
@@ -390,6 +390,7 @@ router.get('/songs',authenticate, async (req, res) => {
     }
 })
 
+// 获取指定歌曲
 router.get('/songs/:id',authenticate, async (req, res) => {
     try {
         if(!req.user.isAdmin){
@@ -427,6 +428,7 @@ router.post('/songs/search',authenticate, async (req, res) => {
 }
 )
 
+// 获取指定歌曲的所有信息
 router.get('/lyrics/:id',authenticate, async (req, res) => {
     try {
         if(!req.user.isAdmin){
@@ -444,6 +446,7 @@ router.get('/lyrics/:id',authenticate, async (req, res) => {
     }
 })
 
+// 添加歌曲
 router.post('/songs',authenticate, async (req, res) => {
     try {
         if(!req.user.isAdmin){
@@ -462,7 +465,6 @@ router.post('/songs',authenticate, async (req, res) => {
         res.status(201).json({
             id: result.insertId,
             message: "Song created successfully",
-            lyrics: lyrics
         });
     }
     catch (err) {
@@ -470,6 +472,8 @@ router.post('/songs',authenticate, async (req, res) => {
         res.status(500).json({ error: 'Server Error', details: err});
     }
 });
+
+// 删除歌曲
 router.delete('/songs/:id',authenticate, async (req, res) => {
     try {
         if(!req.user.isAdmin){

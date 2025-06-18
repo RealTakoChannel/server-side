@@ -11,7 +11,23 @@ const authenticate = require('../middleware/auth');
 router.get('/info',authenticate, async (req, res) => {
     try {
         const [rows] = await pool.execute(
-            'SELECT email, username, id, created_at FROM users WHERE id = ?',
+            'SELECT email, username, id, experience, created_at FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (rows.length === 0) {
+            return res.status(404).send('User not found');
+        }
+        const user = rows[0];
+        res.json(user);
+    } catch (err) {
+        res.status(500).send('Server error');
+    }
+})
+
+router.get('/info/experience',authenticate, async (req, res) => {
+    try {
+        const [rows] = await pool.execute(
+            'SELECT experience FROM users WHERE id = ?',
             [req.user.id]
         );
         if (rows.length === 0) {
@@ -30,11 +46,9 @@ router.get('/info',authenticate, async (req, res) => {
 router.put('/changePassword',authenticate, async (req, res) => {
     try {
         const {password} = req.body;
-        const id = req.user.id
-        console.log("user "+id+" try to edit password to "+ password)
         const [result] = await pool.query(
             'UPDATE users SET password = ? WHERE id = ?',
-            [password, id]
+            [password, req.user.id]
         );
         console.log("success")
         res.status(200).json({ result: result.affectedRows });
@@ -81,6 +95,18 @@ router.get('/posts',authenticate , async (req, res) => {
     try {
         const [posts] = await pool.query(
             'SELECT * FROM posts WHERE user_id = ?',
+            [req.user.id]
+        );
+        res.json(posts);
+    } catch (err) {
+        res.status(500).send({message: 'Server error', err});
+    }
+})
+
+router.put('/checkIn',authenticate , async (req, res) => {
+    try {
+        const [posts] = await pool.query(
+            'UPDATE users SET experience = experience + 1 WHERE id = ?',
             [req.user.id]
         );
         res.json(posts);

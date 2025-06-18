@@ -67,6 +67,10 @@ router.post('/login', async (req, res) => {
             return res.status(401).send('Invalid email or password');
         }
         const user = rows[0];
+        const [checkIn] = await pool.query(
+            'UPDATE users SET experience = experience + 1 WHERE id = ?',
+            [user.id]
+        );
         jwt.sign({email, id: user.id, username: user.username },
             jwtKey,
             {expiresIn: '1d'},
@@ -77,6 +81,8 @@ router.post('/login', async (req, res) => {
             })
         );
         console.log("Login Success",rows)
+
+
     } catch (err) {
         res.status(500).send('Server error');
         console.log("Login Failed",err)
